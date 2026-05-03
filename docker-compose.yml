@@ -3,7 +3,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
     environment:
-      SA_PASSWORD: "Password"
+      SA_PASSWORD: "xxx"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
@@ -13,8 +13,8 @@ services:
       test: >
         /opt/mssql-tools18/bin/sqlcmd
         -S localhost
-        -U Username
-        -P "Password"
+        -U xxx
+        -P "xxx"
         -C
         -Q "SELECT 1"
       interval: 10s
@@ -28,7 +28,7 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:8080
       ASPNETCORE_ENVIRONMENT: Docker
-      ConnectionStrings__DockerDB: "Server=sqlserver;Database=Database;User Id=Username;Password;TrustServerCertificate=True;"
+      ConnectionStrings__Default: "Server=dotnet8-db.xxx.eu-north-1.rds.amazonaws.com,1433;Database=Dotnet8DB;User Id=xxx;Password=xxx;TrustServerCertificate=True;"
     ports:
       - "5000:8080"
     depends_on:
