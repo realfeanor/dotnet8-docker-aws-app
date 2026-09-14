@@ -126,7 +126,7 @@ docker-compose up --build
 Then access:
 
 - Frontend: http://localhost:3000  
-- Backend API: http://localhost:xxxx  
+- Backend API: http://localhost:5000/swagger  
 
 ---
 
