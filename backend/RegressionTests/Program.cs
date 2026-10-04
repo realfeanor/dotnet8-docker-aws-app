@@ -84,7 +84,7 @@ var productRequest = JsonSerializer.Deserialize<ProductForCreateDto>(
     "{\"id\":42,\"productName\":\"Apple Juice\",\"categoryId\":1,\"quantityPerUnit\":\"1 bottle\",\"unitPrice\":15,\"unitsInStock\":20}",
     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 categories.Items.Single().Id = 1;
-var productResult = new ProductsController(new ProductManager(products, new CategoryManager(categories, products))).Add(productRequest);
+var productResult = new ProductsController(new ProductManager(products, categories)).Add(productRequest);
 Check(productResult is OkObjectResult && products.Items.Single().Id == 0,
     "Product creation ignores client IDs and leaves the key for database generation");
 var savedProduct = products.Items.Single();
@@ -96,8 +96,8 @@ Check(context.Model.FindEntityType(typeof(Product)).FindProperty("Id").ValueGene
 savedProduct.Id = 7;
 savedProduct.Category = categories.Items.Single();
 savedProduct.Category.Products.Add(savedProduct);
-var responseController = new ProductsController(new ProductManager(products, new CategoryManager(categories, products)));
-var readManager = new ProductManager(products, new CategoryManager(categories, products));
+var responseController = new ProductsController(new ProductManager(products, categories));
+var readManager = new ProductManager(products, categories);
 Check(readManager.GetById(7).Data is Product && readManager.GetList().Data is List<Product> &&
     readManager.GetListByCategory(1).Data is List<Product>,
     "Product manager read methods return entities rather than response DTOs");
@@ -118,7 +118,7 @@ Check(!JsonSerializer.Serialize(categoryResponses).Contains("Products"),
     "Category responses exclude entity navigation collections");
 Check(responseController.GetById(999) is NotFoundObjectResult,
     "Product detail returns 404 for a missing product");
-var productController = new ProductsController(new ProductManager(products, new CategoryManager(categories, products)));
+var productController = new ProductsController(new ProductManager(products, categories));
 var updateRequest = new ProductForUpdateDto
 {
     Id = 7, ProductName = "Apple Soda", CategoryId = 1,
@@ -130,7 +130,7 @@ Check(productController.Update(updateRequest) is OkObjectResult &&
     savedProduct.UnitPrice == 20 && savedProduct.UnitsInStock == 10,
     "Update modifies the existing product and preserves its identity");
 var originalProductCount = products.Items.Count;
-Check(new ProductManager(products, new CategoryManager(categories, products)).TransactionalOperation(
+Check(new ProductManager(products, categories).TransactionalOperation(
     new Product { Id = 7, ProductName = "Apple Soda", CategoryId = 1, QuantityPerUnit = "2 bottles", UnitPrice = 20, UnitsInStock = 10 }).Success &&
     products.Items.Count == originalProductCount,
     "Transaction updates the existing product without inserting its identity again");
@@ -225,7 +225,7 @@ var missingCategoryResult = new CategoryManager(categories, products).Delete(new
 Check(missingCategoryResult.GetType() == typeof(Core.Utilities.Results.ErrorResult) &&
     missingCategoryResult.Message == Business.Constants.Messages.CategoryNotFound,
     "Missing categories use ErrorResult with the category-not-found message");
-var missingProductResult = new ProductManager(products, new CategoryManager(categories, products)).Update(new Product { Id = 999 });
+var missingProductResult = new ProductManager(products, categories).Update(new Product { Id = 999 });
 Check(missingProductResult.GetType() == typeof(Core.Utilities.Results.ErrorResult) &&
     !string.IsNullOrWhiteSpace(missingProductResult.Message),
     "Missing products use ErrorResult with an explanatory message");
@@ -237,6 +237,61 @@ foreach (var endpoint in new[] { (typeof(CategoryController), "DeleteCategory"),
         method.GetParameters().Single().ParameterType == typeof(int),
         endpoint.Item1.Name + " deletion uses an integer ID in a DELETE route");
 }
+var loginValidator = new Business.ValidationRules.FluentValidation.UserForLoginValidator();
+Check(!loginValidator.Validate(new UserForLoginDto { Email = "user@example.com", Password = null }).IsValid &&
+    !loginValidator.Validate(new UserForLoginDto { Email = "invalid", Password = "password" }).IsValid,
+    "Login validation rejects missing passwords and malformed email addresses");
+var registerValidator = new Business.ValidationRules.FluentValidation.UserForRegisterValidator();
+Check(!registerValidator.Validate(new UserForRegisterDto { Email = "user@example.com", Password = "", FirstName = "", LastName = "" }).IsValid,
+    "Registration validation rejects empty passwords and names");
+Check(!productValidator.Validate(new Product { ProductName = "Example", CategoryId = 2, UnitPrice = 1, UnitsInStock = -1 }).IsValid,
+    "Product validation rejects negative stock");
+Check(!typeof(ProductManager).GetMethod("TransactionalOperation").GetCustomAttributesData().Any(a =>
+    a.AttributeType == typeof(Core.Aspects.Autofac.Transaction.TransactionScopeAspect)),
+    "Single-save update does not start an ambient transaction conflicting with SQL retries");
+var services = new ServiceCollection();
+services.AddSingleton<IHttpContextAccessor>(accessor);
+services.AddMemoryCache();
+services.AddSingleton<Core.CrossCuttingConcerns.Caching.ICacheManager, MemoryCacheManager>();
+services.AddSingleton<System.Diagnostics.Stopwatch>();
+ServiceTool.Create(services);
+var generator = new Castle.DynamicProxy.ProxyGenerator();
+var proxyOptions = new Castle.DynamicProxy.ProxyGenerationOptions
+{
+    Selector = new Core.Utilities.Interceptors.AspectInterceptorSelector()
+};
+var proxyCategories = new FakeCategories();
+proxyCategories.Items.Add(new Category { Id = 2, CategoryName = "Allowed" });
+var proxyProducts = new FakeProducts();
+var productProxy = generator.CreateInterfaceProxyWithTarget<IProductService>(
+    new ProductManager(proxyProducts, proxyCategories), proxyOptions);
+accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Product.Add") }, "test"));
+Check(productProxy.Add(new Product { ProductName = "Proxy Product", CategoryId = 2, UnitPrice = 1 }).Success,
+    "Real authorization proxy permits Product.Add without Category.Get");
+accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Product.Update") }, "test"));
+Check(productProxy.Update(new Product { Id = 0, ProductName = "Proxy Product", CategoryId = 2, UnitPrice = 2 }).Success,
+    "Real authorization proxy permits Product.Update without Category.Get");
+accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+bool denied = false;
+try { productProxy.Add(new Product { ProductName = "Denied", CategoryId = 2, UnitPrice = 1 }); }
+catch (UnauthorizedAccessException) { denied = true; }
+Check(denied && proxyProducts.Items.Count == 1, "Real authorization proxy blocks anonymous writes before persistence");
+var authProxy = generator.CreateInterfaceProxyWithTarget<IAuthService>(auth, proxyOptions);
+bool invalidLogin = false;
+try { authProxy.Login(new UserForLoginDto { Email = "user@example.com", Password = null }); }
+catch (FluentValidation.ValidationException) { invalidLogin = true; }
+Check(invalidLogin, "Real validation proxy rejects missing login password before hashing");
+bool invalidRegistration = false;
+try { authProxy.Register(new UserForRegisterDto { Email = "user@example.com", Password = "", FirstName = "Example", LastName = "User" }, ""); }
+catch (FluentValidation.ValidationException) { invalidRegistration = true; }
+Check(invalidRegistration, "Real validation proxy rejects empty registration passwords before persistence");
+bool nullRequest = false;
+try { authProxy.Login(null); }
+catch (FluentValidation.ValidationException) { nullRequest = true; }
+Check(nullRequest, "Real validation proxy rejects null requests with a validation error");
+Check(context.Model.FindEntityType(typeof(User)).GetIndexes().Any(i => i.IsUnique && i.Properties.Single().Name == "Email") &&
+    context.Model.FindEntityType(typeof(Product)).GetIndexes().Any(i => i.IsUnique && i.Properties.Single().Name == "ProductName"),
+    "Database model enforces unique emails and product names");
 Console.WriteLine("All backend regression checks passed.");
 
 class FakeUsers(User user) : IUserService
@@ -249,6 +304,7 @@ class FakeUsers(User user) : IUserService
 }
 class FakeCategories : ICategoryDal
 {
+    public bool Exists(int categoryId) => Items.Any(c => c.Id == categoryId);
     public Category LastUpdated { get; private set; }
     public List<Category> Items { get; } = new();
     public void Add(Category category) => Items.Add(category);

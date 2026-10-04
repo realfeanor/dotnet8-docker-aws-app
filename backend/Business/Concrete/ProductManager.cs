@@ -30,12 +30,14 @@ namespace Business.Concrete
 		}
 
 		[SecuredOperation("Admin,Product.Get", Priority = -100)]
+		[LogAspect(typeof(FileLogger))]
 		public IDataResult<Product> GetById(int productId)
 		{
 			return new SuccessDataResult<Product>(_productDal.GetWithCategory(productId));
 		}
 
 		[SecuredOperation("Admin,Product.Get", Priority = -100)]
+		[LogAspect(typeof(DatabaseLogger))]
 		[PerformanceAspect(5)]
 		public IDataResult<List<Product>> GetList()
 		{
@@ -43,7 +45,7 @@ namespace Business.Concrete
 		}
 
 		[SecuredOperation("Admin,Product.Get", Priority = -100)]
-		[LogAspect(typeof(FileLogger))]
+		[LogAspect(typeof(DatabaseLogger))]
 		[CacheAspect(duration: 10)]
 		public IDataResult<List<Product>> GetListByCategory(int categoryId)
 		{

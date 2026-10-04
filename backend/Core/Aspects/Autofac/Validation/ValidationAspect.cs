@@ -26,7 +26,10 @@ namespace Core.Aspects.Autofac.Validation
         {
             var validator = (IValidator)Activator.CreateInstance(_validatorType);
             var entityType = _validatorType.BaseType.GetGenericArguments()[0];
-            var entities = invocation.Arguments.Where(t => t.GetType() == entityType);
+            if (invocation.Arguments.Select((argument, index) => new { argument, index })
+                .Any(item => item.argument == null && entityType.IsAssignableFrom(invocation.Method.GetParameters()[item.index].ParameterType)))
+                throw new ValidationException("Request cannot be null.");
+            var entities = invocation.Arguments.Where(t => t != null && entityType.IsInstanceOfType(t));
             foreach (var entity in entities)
             {
                 ValidationTool.Validate(validator,entity);

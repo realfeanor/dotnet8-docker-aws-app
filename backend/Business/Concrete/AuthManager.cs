@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Business.Abstract;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Business.Constants;
 using Core.Entities.Concrete;
 using Core.Utilities.Results;
@@ -22,8 +26,13 @@ namespace Business.Concrete
             _tokenHelper = tokenHelper;
         }
 
+        [ValidationAspect(typeof(UserForRegisterValidator), Priority = 1)]
         public IDataResult<User> Register(UserForRegisterDto userForRegisterDto, string password)
         {
+            if (password != userForRegisterDto.Password)
+                return new ErrorDataResult<User>("Registration passwords do not match.");
+            var exists = UserExists(userForRegisterDto.Email);
+            if (!exists.Success) return new ErrorDataResult<User>(exists.Message);
             byte[] passwordHash, passwordSalt;
             HashingHelper.CreatePasswordHash(password,out passwordHash,out passwordSalt);
             var user = new User
@@ -35,10 +44,15 @@ namespace Business.Concrete
                 PasswordSalt = passwordSalt,
                 Status = true
             };
-            _userService.Add(user);
+            try { _userService.Add(user); }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sql && (sql.Number == 2601 || sql.Number == 2627))
+            {
+                return new ErrorDataResult<User>(Messages.UserAlreadyExists);
+            }
             return  new SuccessDataResult<User>(user,Messages.UserRegistered);
         }
 
+        [ValidationAspect(typeof(UserForLoginValidator), Priority = 1)]
         public IDataResult<User> Login(UserForLoginDto userForLoginDto)
         {
             var userToCheck = _userService.GetByMail(userForLoginDto.Email);

@@ -10,6 +10,7 @@ namespace Business.ValidationRules.FluentValidation
     {
         public ProductValidator()
         {
+            RuleFor(p => p.UnitsInStock).GreaterThanOrEqualTo((short)0);
             RuleFor(p => p.ProductName).NotEmpty();
             RuleFor(p => p.ProductName).Length(2, 30);
             RuleFor(p => p.UnitPrice).NotEmpty();

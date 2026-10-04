@@ -15,6 +15,10 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Product>().Property(p => p.UnitPrice).HasPrecision(18, 2);
+            modelBuilder.Entity<Product>().Property(p => p.ProductName).HasMaxLength(30);
+            modelBuilder.Entity<Product>().HasIndex(p => p.ProductName).IsUnique();
+            modelBuilder.Entity<User>().Property(u => u.Email).HasMaxLength(320);
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.Category)
                 .WithMany(c => c.Products)
