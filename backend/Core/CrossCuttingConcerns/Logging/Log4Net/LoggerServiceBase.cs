@@ -11,19 +11,38 @@ namespace Core.CrossCuttingConcerns.Logging.Log4Net
 {
     public class LoggerServiceBase
     {
-        private ILog _log;
+        private static readonly object ConfigurationLock = new object();
+        private static ILoggerRepository _repository;
+        private readonly ILog _log;
+
+        public static void Configure(string connectionString, string configurationPath)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentException("A database connection string is required.", nameof(connectionString));
+
+            lock (ConfigurationLock)
+            {
+                if (_repository != null) return;
+
+                var document = new XmlDocument();
+                using (var config = File.OpenRead(configurationPath))
+                    document.Load(config);
+
+                // Set the connection before log4net activates its database appenders.
+                foreach (XmlElement connection in document.SelectNodes("/log4net/appender[@type='log4net.Appender.AdoNetAppender']/connectionString"))
+                    connection.SetAttribute("value", connectionString);
+
+                var repository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+                log4net.Config.XmlConfigurator.Configure(repository, document["log4net"]);
+                _repository = repository;
+            }
+        }
+
         public LoggerServiceBase(string name)
         {
-            XmlDocument xmlDocument=new XmlDocument();
-            xmlDocument.Load(File.OpenRead("log4net.config"));
-
-            ILoggerRepository loggerRepository = LogManager.CreateRepository(Assembly.GetEntryAssembly(),
-                typeof(log4net.Repository.Hierarchy.Hierarchy));
-            log4net.Config.XmlConfigurator.Configure(loggerRepository, xmlDocument["log4net"]);
-
-            _log = LogManager.GetLogger(loggerRepository.Name, name);
-
-
+            var repository = _repository ?? throw new InvalidOperationException(
+                "Configure log4net at application startup before creating loggers.");
+            _log = LogManager.GetLogger(repository.Name, name);
         }
 
         public bool IsInfoEnabled => _log.IsInfoEnabled;

@@ -137,6 +137,10 @@ if (!app.Environment.IsProduction())
 }
 
 
+Core.CrossCuttingConcerns.Logging.Log4Net.LoggerServiceBase.Configure(
+    connectionString, Path.Combine(AppContext.BaseDirectory, "log4net.config"));
+app.Lifetime.ApplicationStopped.Register(() => log4net.LogManager.Shutdown());
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
