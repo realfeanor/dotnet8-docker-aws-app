@@ -54,28 +54,5 @@ namespace WebAPI.Controllers
 			return BadRequest(result.Message);
 		}
 
-		[HttpPost("updateuser")]
-		public ActionResult UpdatePassword(UserForLoginDto userForLoginDto)
-		{
-			var update = _authService.UpdatePassword(userForLoginDto);
-
-			if (update.Success)
-			{
-				var userToLogin = _authService.Login(userForLoginDto);
-				if (!userToLogin.Success)
-				{
-					return BadRequest(userToLogin.Message);
-				}
-
-				var result = _authService.CreateAccessToken(userToLogin.Data);
-
-				if (result.Success)
-				{
-					return Ok(result.Data);
-				}
-			}
-
-			return BadRequest(update.Message);
-		}
 	}
 }

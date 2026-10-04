@@ -11,7 +11,18 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
 		{
 		}
 
-		public DbSet<Product> Products { get; set; }
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Product>().Property(p => p.UnitPrice).HasPrecision(18, 2);
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        public DbSet<Product> Products { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<OperationClaim> OperationClaims { get; set; }
 		public DbSet<User> Users { get; set; }

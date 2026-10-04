@@ -42,7 +42,7 @@ namespace Business.Concrete
         public IDataResult<User> Login(UserForLoginDto userForLoginDto)
         {
             var userToCheck = _userService.GetByMail(userForLoginDto.Email);
-            if (userToCheck==null)
+            if (userToCheck==null || !userToCheck.Status)
             {
                 return new ErrorDataResult<User>(Messages.UserNotFound);
             }
@@ -71,21 +71,5 @@ namespace Business.Concrete
             return new SuccessDataResult<AccessToken>(accessToken,Messages.AccessTokenCreated);
         }
 
-		public IDataResult<User> UpdatePassword(UserForLoginDto userForLoginDto)
-		{
-			var userToCheck = _userService.GetByMail(userForLoginDto.Email);
-			if (userToCheck != null)
-			{
-				byte[] passwordHash, passwordSalt;
-				HashingHelper.CreatePasswordHash(userForLoginDto.Password, out passwordHash, out passwordSalt);
-
-				userToCheck.PasswordHash = passwordHash;
-				userToCheck.PasswordSalt = passwordSalt;
-
-				_userService.Update(userToCheck);
-				return new SuccessDataResult<User>(userToCheck, Messages.UserSuccessfulyUpdated);
-			}
-			return new ErrorDataResult<User>(Messages.UserUpdateFailed);
-		}
 	}
 }

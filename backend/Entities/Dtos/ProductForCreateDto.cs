@@ -1,0 +1,13 @@
+using Core.Entities;
+
+namespace Entities.Dtos
+{
+    public class ProductForCreateDto : IDto
+    {
+        public string ProductName { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+        public string QuantityPerUnit { get; set; } = string.Empty;
+        public decimal UnitPrice { get; set; }
+        public short UnitsInStock { get; set; }
+    }
+}

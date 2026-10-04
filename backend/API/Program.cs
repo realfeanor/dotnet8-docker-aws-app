@@ -25,7 +25,12 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
                                             builder.RegisterModule(new AutofacBusinessModule()));
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Field validation belongs to FluentValidation aspects in the business layer.
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+});
+builder.Services.AddCors();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 var configuration = (IConfiguration)builder.Configuration;
@@ -50,18 +55,17 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-//var connectionString = builder.Configuration.GetValue<string>(
-//	Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"
-//		? "ConnectionStrings__DB_Prod"
-//		: "ConnectionStrings__DB_Dev"
-//);
-
-//builder.Services.AddDbContext<NorthwindContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DB")));
+var connectionString = builder.Configuration.GetConnectionString("Default");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        $"ConnectionStrings:Default is missing for environment '{builder.Environment.EnvironmentName}'. " +
+        "Set it in appsettings.Development.json, user secrets, or the ConnectionStrings__Default environment variable.");
+}
 
 builder.Services.AddDbContext<NorthwindContext>(options =>
 	options.UseSqlServer(
-		builder.Configuration.GetConnectionString("Default"),
+		connectionString,
 		sqlOptions =>
 		{
 			sqlOptions.EnableRetryOnFailure(
@@ -148,7 +152,7 @@ app.UseCors(x => x.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
 
 //app.UseHttpsRedirection();
 
-if (!app.Environment.IsProduction())
+if (app.Environment.IsDevelopment())
 {
 	app.UseHttpsRedirection();
 }

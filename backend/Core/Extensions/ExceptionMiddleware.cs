@@ -35,8 +35,14 @@ namespace Core.Extensions
             httpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
 
             string message = "Internal Server Error";
+            if (e is UnauthorizedAccessException)
+            {
+                httpContext.Response.StatusCode = httpContext.User.Identity?.IsAuthenticated == true ? 403 : 401;
+                message = "Access denied";
+            }
             if (e.GetType()==typeof(ValidationException))
             {
+                httpContext.Response.StatusCode = 400;
                 message = e.Message;
             }
 

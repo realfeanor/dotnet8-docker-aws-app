@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Business.Abstract;
 using Core.Extensions;
+using Core.Utilities.Results;
 using Entities.Concrete;
-using Microsoft.AspNetCore.Authorization;
+using Entities.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,14 +24,13 @@ namespace WebAPI.Controllers
 		}
 
 		[HttpGet("getall")]
-		//[Authorize(Roles = "Product.List")]
 		public IActionResult GetList()
 		{
 
 			var result = _productService.GetList();
 			if (result.Success)
 			{
-				return Ok(result.Data);
+				return Ok(result.Data.Select(ToResponse).ToList());
 			}
 
 			return BadRequest(result.Message);
@@ -42,7 +42,7 @@ namespace WebAPI.Controllers
 			var result = _productService.GetListByCategory(categoryId);
 			if (result.Success)
 			{
-				return Ok(result.Data);
+				return Ok(result.Data.Select(ToResponse).ToList());
 			}
 
 			return BadRequest(result.Message);
@@ -54,15 +54,41 @@ namespace WebAPI.Controllers
 			var result = _productService.GetById(productId);
 			if (result.Success)
 			{
-				return Ok(result.Data);
+				return result.Data == null ? NotFound("Product does not exist.") : Ok(ToResponse(result.Data));
 			}
 
 			return BadRequest(result.Message);
 		}
 
+        private static ProductResponseDto ToResponse(Product product)
+        {
+            return new ProductResponseDto
+            {
+                Id = product.Id,
+                ProductName = product.ProductName,
+                CategoryId = product.CategoryId,
+                Category = product.Category == null ? null : new CategoryResponseDto
+                {
+                    Id = product.Category.Id,
+                    CategoryName = product.Category.CategoryName
+                },
+                QuantityPerUnit = product.QuantityPerUnit,
+                UnitPrice = product.UnitPrice,
+                UnitsInStock = product.UnitsInStock
+            };
+        }
+
 		[HttpPost("add")]
-		public IActionResult Add(Product product)
-		{
+		public IActionResult Add(ProductForCreateDto request)
+        {
+            var product = new Product
+            {
+                ProductName = request.ProductName,
+                CategoryId = request.CategoryId,
+                QuantityPerUnit = request.QuantityPerUnit,
+                UnitPrice = request.UnitPrice,
+                UnitsInStock = request.UnitsInStock
+            };
 			var result = _productService.Add(product);
 			if (result.Success)
 			{
@@ -73,8 +99,17 @@ namespace WebAPI.Controllers
 		}
 
 		[HttpPost("update")]
-		public IActionResult Update(Product product)
-		{
+		public IActionResult Update(ProductForUpdateDto request)
+        {
+            var product = new Product
+            {
+                Id = request.Id,
+                ProductName = request.ProductName,
+                CategoryId = request.CategoryId,
+                QuantityPerUnit = request.QuantityPerUnit,
+                UnitPrice = request.UnitPrice,
+                UnitsInStock = request.UnitsInStock
+            };
 			var result = _productService.Update(product);
 			if (result.Success)
 			{
@@ -84,9 +119,10 @@ namespace WebAPI.Controllers
 			return BadRequest(result.Message);
 		}
 
-		[HttpPost("delete")]
-		public IActionResult Delete(Product product)
-		{
+		[HttpDelete("{id:int}")]
+		public IActionResult Delete([FromRoute] int id)
+        {
+            var product = new Product { Id = id };
 			var result = _productService.Delete(product);
 			if (result.Success)
 			{
@@ -97,8 +133,17 @@ namespace WebAPI.Controllers
 		}
 
 		[HttpPost("transaction")]
-		public IActionResult TransactionTest(Product product)
-		{
+		public IActionResult TransactionTest(ProductForUpdateDto request)
+        {
+            var product = new Product
+            {
+                Id = request.Id,
+                ProductName = request.ProductName,
+                CategoryId = request.CategoryId,
+                QuantityPerUnit = request.QuantityPerUnit,
+                UnitPrice = request.UnitPrice,
+                UnitsInStock = request.UnitsInStock
+            };
 			var result = _productService.TransactionalOperation(product);
 			if (result.Success)
 			{

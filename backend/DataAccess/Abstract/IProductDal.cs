@@ -1,13 +1,14 @@
-﻿using Core.DataAccess;
+using Core.DataAccess;
 using Entities.Concrete;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DataAccess.Abstract
 {
-    public interface IProductDal:IEntityRepository<Product>
+    public interface IProductDal : IEntityRepository<Product>
     {
-
+        Product GetWithCategory(int productId);
+        List<Product> GetListWithCategory(int? categoryId = null);
+        bool ProductNameExists(string productName, int? excludedProductId = null);
+        bool HasProductsInCategory(int categoryId);
     }
 }

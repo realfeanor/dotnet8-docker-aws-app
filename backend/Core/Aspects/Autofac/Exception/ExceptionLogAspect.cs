@@ -38,8 +38,8 @@ namespace Core.Aspects.Autofac.Exception
                 logParameters.Add(new LogParameter
                 {
                     Name= invocation.GetConcreteMethod().GetParameters()[i].Name,
-                    Value = invocation.Arguments[i],
-                    Type = invocation.Arguments[i].GetType().Name
+                    Value = "[redacted]",
+                    Type = invocation.Arguments[i]?.GetType().Name ?? "null"
                 });
             }
 
