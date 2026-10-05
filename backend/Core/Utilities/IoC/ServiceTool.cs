@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Core.Utilities.IoC
 {
+    // Attribute-based aspects use the application's existing container for singleton dependencies.
     public static class ServiceTool
     {
-        public static IServiceProvider ServiceProvider { get; private set; }
+        public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
-        public static IServiceCollection Create(IServiceCollection services)
+        public static void Initialize(IServiceProvider serviceProvider)
         {
-            ServiceProvider = services.BuildServiceProvider();
-            return services;
+            ArgumentNullException.ThrowIfNull(serviceProvider);
+            ServiceProvider = serviceProvider;
         }
     }
 }

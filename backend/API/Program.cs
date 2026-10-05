@@ -118,6 +118,7 @@ builder.Services.AddSwaggerGen(swagger =>
 //builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+ServiceTool.Initialize(app.Services);
 
 // 🔹 APPLY MIGRATIONS ONLY IN NON-PRODUCTION
 if (!app.Environment.IsProduction())

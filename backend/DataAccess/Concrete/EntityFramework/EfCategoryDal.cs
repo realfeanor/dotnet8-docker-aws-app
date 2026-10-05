@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Core.DataAccess.EntityFramework;
@@ -10,6 +10,8 @@ namespace DataAccess.Concrete.EntityFramework
 {
     public class EfCategoryDal : EfEntityRepositoryBase<Category, NorthwindContext>, ICategoryDal
     {
+        public bool Exists(int categoryId) => _context.Categories.Any(c => c.Id == categoryId);
+
 		public EfCategoryDal(NorthwindContext context) : base(context)
 		{
 		}

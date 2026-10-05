@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\Da
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entities", "Entities\Entities.csproj", "{07BCEDFB-5C6B-4918-B550-EE02B11CB7B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegressionTests", "RegressionTests\RegressionTests.csproj", "{1AB29AD7-DE71-45B5-BCD6-2AE8C11EF737}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{07BCEDFB-5C6B-4918-B550-EE02B11CB7B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07BCEDFB-5C6B-4918-B550-EE02B11CB7B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07BCEDFB-5C6B-4918-B550-EE02B11CB7B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AB29AD7-DE71-45B5-BCD6-2AE8C11EF737}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AB29AD7-DE71-45B5-BCD6-2AE8C11EF737}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AB29AD7-DE71-45B5-BCD6-2AE8C11EF737}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AB29AD7-DE71-45B5-BCD6-2AE8C11EF737}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

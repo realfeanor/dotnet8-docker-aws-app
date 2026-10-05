@@ -4,14 +4,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
 WORKDIR /src
 
-COPY Dotnet8-Backend.sln .
 COPY API/API.csproj API/
 COPY Business/Business.csproj Business/
 COPY Core/Core.csproj Core/
 COPY DataAccess/DataAccess.csproj DataAccess/
 COPY Entities/Entities.csproj Entities/
 
-RUN dotnet restore Dotnet8-Backend.sln
+# Restore only the API and its referenced projects for the runtime image.
+RUN dotnet restore API/API.csproj
 
 COPY . .
 

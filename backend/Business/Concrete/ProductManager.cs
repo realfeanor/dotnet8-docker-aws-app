@@ -1,4 +1,4 @@
-﻿using Business.Abstract;
+using Business.Abstract;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Caching;
@@ -21,12 +21,12 @@ namespace Business.Concrete
 	public class ProductManager : IProductService
 	{
 		private IProductDal _productDal;
-		private ICategoryService _categoryService;
+		private readonly ICategoryDal _categoryDal;
 
-		public ProductManager(IProductDal productDal, ICategoryService categoryService)
+		public ProductManager(IProductDal productDal, ICategoryDal categoryDal)
 		{
 			_productDal = productDal;
-			_categoryService = categoryService;
+			_categoryDal = categoryDal;
 		}
 
 		[SecuredOperation("Admin,Product.Get", Priority = -100)]
@@ -81,8 +81,7 @@ namespace Business.Concrete
 
 		private IResult CheckIfCategoryExists(int categoryId)
         {
-            var categories = _categoryService.GetList();
-            return categories.Data.Any(c => c.Id == categoryId)
+            return _categoryDal.Exists(categoryId)
                 ? new SuccessResult()
                 : new ErrorResult("Category does not exist.");
         }
@@ -126,7 +125,6 @@ namespace Business.Concrete
 
 		[SecuredOperation("Admin", Priority = -100)]
 		[ValidationAspect(typeof(ProductValidator), Priority = 1)]
-		[TransactionScopeAspect]
 		[CacheRemoveAspect("IProductService.Get")]
 		public IResult TransactionalOperation(Product product)
 		{
