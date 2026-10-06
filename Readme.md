@@ -199,8 +199,10 @@ React application hosted on EC2 instance.
 User interface with authentication screen.
 
 ![Frontend](./screenshots/6-frontend1.png)
-![Frontend](./screenshots/6-frontend2.png)
-![Frontend](./screenshots/6-frontend3.png)
+
+![Frontend](./screenshots/7-frontend2.png)
+
+![Frontend](./screenshots/8-frontend3.png)
 
 ---
 
