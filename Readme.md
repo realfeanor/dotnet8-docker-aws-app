@@ -198,14 +198,16 @@ React application hosted on EC2 instance.
 ### 🌍 Frontend (Live Application)
 User interface with authentication screen.
 
-![Frontend](./screenshots/6-frontend.png)
+![Frontend](./screenshots/6-frontend1.png)
+![Frontend](./screenshots/6-frontend2.png)
+![Frontend](./screenshots/6-frontend3.png)
 
 ---
 
 ### 📡 API Documentation (Swagger)
 API endpoints and testing interface.
 
-![Swagger](./screenshots/7-swagger.png)
+![Swagger](./screenshots/9-swagger.png)
 
 ---
 
