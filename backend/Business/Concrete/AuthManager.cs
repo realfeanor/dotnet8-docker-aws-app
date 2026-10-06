@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Business.Abstract;
@@ -44,7 +44,8 @@ namespace Business.Concrete
                 PasswordSalt = passwordSalt,
                 Status = true
             };
-            try { _userService.Add(user); }
+            // Default permissions are chosen by the server, never supplied by the registration request.
+            try { _userService.AddWithClaims(user, new[] { "Product.Get", "Category.Get" }); }
             catch (DbUpdateException ex) when (ex.InnerException is SqlException sql && (sql.Number == 2601 || sql.Number == 2627))
             {
                 return new ErrorDataResult<User>(Messages.UserAlreadyExists);

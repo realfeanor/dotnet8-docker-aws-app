@@ -6,7 +6,7 @@ This is an xUnit test project, not an application layer. It replaces the previou
 dotnet test backend/Dotnet8-Backend.sln
 ```
 
-No Docker containers or SQL Server instance are needed. The API Dockerfile restores and publishes only the API and its dependencies; test packages are not dependencies of the API.
+No Docker containers or SQL Server instance are needed. Registration persistence tests use a fresh in-memory SQLite database per test; they do not verify SQL Server retry or concurrency behavior. The API Dockerfile restores and publishes only the API and its dependencies; test packages are not dependencies of the API.
 
 ## Read your first test
 
@@ -29,6 +29,7 @@ The test name describes the method, the situation, and the expected outcome. Eac
 | `CategoryManagerTests.cs` | Protecting referenced categories and preserving identity during updates |
 | `ControllerTests.cs` | DTO mapping, ignoring client-supplied creation IDs, and missing-product responses |
 | `AspectTests.cs` | Authorization, validation, and cache invalidation through real Castle proxies |
+| `RegistrationTests.cs` | Registration permissions, JWT claims, and rollback using an isolated in-memory SQLite database |
 | `ModelTests.cs` | EF relationships, generated IDs, unique indexes, and migration SQL |
 | `Fakes.cs` | In-memory substitutes for repositories and the user service |
 

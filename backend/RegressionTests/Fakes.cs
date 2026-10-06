@@ -12,6 +12,7 @@ class FakeUsers(User user) : IUserService
     public User GetByMail(string email) => User.Email == email ? User : null;
     public List<OperationClaim> GetClaims(User user) => new();
     public void Add(User user) => throw new NotSupportedException();
+    public void AddWithClaims(User user, string[] claimNames) => throw new NotSupportedException();
     public void Update(User user) => throw new Exception("Login must not update a user");
 }
 class FakeCategories : ICategoryDal

@@ -1,29 +1,23 @@
-import axios from "axios";
-import constants from "../constants/constants";
-
-const api = axios.create({
-  baseURL: constants.apiBaseUrl,
-  headers: { "Content-Type": "application/json" }
-});
-
-// Token otomatik ekleme
-api.interceptors.request.use((config) => {
+import axios from 'axios';
+import constants from '../constants/constants';
+const api = axios.create({ baseURL: constants.apiBaseUrl, headers: { 'Content-Type': 'application/json' } });
+api.interceptors.request.use(config => {
   const token = localStorage.getItem(constants.tokenKey2);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token && !/^Auth\//i.test(config.url)) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
-
-// --- Request helpers ---
-export const Get = (endpoint) => api.get(endpoint);
-
-export const Post = (endpoint, data) =>
-  api.post(endpoint, data);
-
-export const PostNoneToken = (endpoint, data) =>
-  axios.post(constants.apiBaseUrl + endpoint, data, {
-    headers: { "Content-Type": "application/json" }
-  });
-
+api.interceptors.response.use(response => response, error => {
+  if (error.response?.status === 401 && !/^Auth\//i.test(error.config?.url || '')) window.dispatchEvent(new Event('session-expired'));
+  return Promise.reject(error);
+});
+export function errorMessage(error) {
+  const data = error.response?.data;
+  if (typeof data === 'string') return data;
+  if (data?.errors) return Object.values(data.errors).flat().map(e => typeof e === 'string' ? e : e.errorMessage || e.message).filter(Boolean).join(' ');
+  return data?.message || data?.Message || data?.detail || error.message || 'İşlem tamamlanamadı.';
+}
+export const Get = endpoint => api.get(endpoint);
+export const Post = (endpoint, data) => api.post(endpoint, data);
+export const PostNoneToken = Post;
 export default api;
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Business.Abstract;
@@ -20,6 +20,11 @@ namespace Business.Concrete
         public List<OperationClaim> GetClaims(User user)
         {
             return _userDal.GetClaims(user);
+        }
+
+        public void AddWithClaims(User user, string[] claimNames)
+        {
+            _userDal.AddWithClaims(user, claimNames);
         }
 
         public void Add(User user)

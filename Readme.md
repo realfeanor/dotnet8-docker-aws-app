@@ -131,7 +131,7 @@ Then access:
 
 ## Explore the Backend
 
-Register a user through `POST /api/Auth/register`. Registration does not grant administrative permissions. To explore protected product and category endpoints locally, connect to the Docker SQL Server at `localhost,1433`, open the `Dotnet8DB` database, and run [grant-demo-admin.sql](backend/scripts/grant-demo-admin.sql) after replacing the sample email with your registered email.
+Register a user through `POST /api/Auth/register`. Registration automatically grants `Product.Get` and `Category.Get`, so new users can read products and categories immediately using the returned token. It does not grant write or administrative permissions. Existing users are unchanged. To explore protected product and category endpoints locally, connect to the Docker SQL Server at `localhost,1433`, open the `Dotnet8DB` database, and run [grant-demo-admin.sql](backend/scripts/grant-demo-admin.sql) after replacing the sample email with your registered email.
 
 Log in again through `POST /api/Auth/login` after assigning the claim. In Swagger, select **Authorize** and enter `Bearer <accessToken>`. The `Admin` claim allows the product and category demo operations; individual claims such as `Product.Add` and `Category.Get` allow only their corresponding operations. Demo administrator assignment is a manual, local setup step.
 
@@ -142,7 +142,7 @@ dotnet build backend/Dotnet8-Backend.sln
 dotnet test backend/Dotnet8-Backend.sln
 ```
 
-The xUnit test project checks business rules with fake repositories, controller DTO mapping, authorization and validation through Castle proxies, cache invalidation, and EF model/migration SQL. Every test runs independently and requires no database or Docker. These checks do not replace a live SQL Server or HTTP integration test.
+The xUnit test project checks business rules with fake repositories, controller DTO mapping, authorization and validation through Castle proxies, cache invalidation, and EF model/migration SQL. Every test runs independently and requires no external database or Docker. Registration persistence tests use isolated in-memory SQLite databases. These checks do not replace a live SQL Server or HTTP integration test.
 
 For a guided introduction to the tests, see [the testing guide](backend/RegressionTests/README.md).
 

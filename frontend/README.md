@@ -1,70 +1,27 @@
-# Getting Started with Create React App
+# Stockroom frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React frontend for the .NET product catalog API. The interface is in Turkish and supports registration, login, searchable products, category filters, and product/category management.
 
-## Available Scripts
+## Run
 
-In the project directory, you can run:
+Set `REACT_APP_API_URL` in `.env` to the backend origin (without `/api`), then run `npm install` and `npm start`.
 
-### `npm start`
+Run `npm test -- --watchAll=false` for permission and route tests, and `npm run build` for a production build.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Permissions
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+New registrations receive `Product.Get` and `Category.Get` from the backend. No role can be selected during registration.
 
-### `npm test`
+| Claim | Frontend capability |
+| --- | --- |
+| Product.Get | Product page and navigation |
+| Category.Get | Category page and navigation, product category filter |
+| Product.Add / Update / Delete | Corresponding product controls |
+| Category.Add / Update / Delete | Corresponding category controls |
+| Admin | All of the above |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Provision admin permissions through the backend/database; registration never grants them. Sign in again after changing claims to get a new token.
 
-### `npm run build`
+The frontend reads the backend's .NET JWT role claims to render navigation and controls. It guards routes, restores valid sessions, signs out at token expiry or authenticated API 401 responses, and synchronizes sessions between tabs. Token decoding in the browser is for presentation; the backend validates tokens and enforces permissions.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Product lists use `GET Products/getall`; category lists use `POST Category/getallcategories`. Management uses the existing add/update POST endpoints and DELETE endpoints. Backend validation errors are displayed in the forms. Prices are shown without a currency symbol because the API does not specify a currency.

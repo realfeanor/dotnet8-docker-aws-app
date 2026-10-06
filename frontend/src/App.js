@@ -1,41 +1,9 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import DataDisplay from './components/DataDisplay';
+import React from 'react';
+import { BrowserRouter, Routes, Route, NavLink, Navigate, Outlet, Link } from 'react-router-dom';
+import { AuthProvider, useAuth } from './components/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
 import LoginPage from './components/LoginPage';
-
-function App() {
-  // State to manage user authentication status
-  const [isLoggedIn, setLoggedIn] = useState(false);
-
-  // Function to handle user login
-  const handleLogin = () => {
-    // Perform your login logic here
-    setLoggedIn(true);
-  };
-
-  // Function to handle user logout
-  const handleLogout = () => {
-    // Perform your logout logic here
-    setLoggedIn(false);
-  };
-
-  return (
-    <div>
-      <Router>
-        <Routes>
-          {/* Use a render function to pass authentication status to components */}
-          <Route
-            path="/"
-            element={<LoginPage isLoggedIn={isLoggedIn} />}
-          />
-          <Route
-            path="/DataDisplay"
-            element={<DataDisplay isLoggedIn={isLoggedIn} />}
-          />
-        </Routes>
-      </Router>
-    </div>
-  );
-}
-
-export default App;
+import Catalog from './components/Catalog';
+import './App.css';
+function Layout(){const {session,can,logout}=useAuth();return <div className="app-shell"><aside><Link className="brand" to="/products">Stockroom<span>Ürün yönetimi</span></Link><nav aria-label="Ana menü">{can('Product.Get')&&<NavLink to="/products">Ürünler</NavLink>}{can('Category.Get')&&<NavLink to="/categories">Kategoriler</NavLink>}</nav><div className="account"><strong>{session.name}</strong><small>{session.email}</small><span className="badge">{session.roles.includes('Admin')?'Admin':'Kullanıcı'}</span><button className="secondary" onClick={logout}>Çıkış yap</button></div></aside><main className="content"><Outlet/></main></div>;}
+export default function App(){return <AuthProvider><BrowserRouter><Routes><Route path="/login" element={<LoginPage/>}/><Route path="/register" element={<LoginPage register/>}/><Route element={<PrivateRoute/>}><Route element={<Layout/>}><Route element={<PrivateRoute permission="Product.Get"/>}><Route path="/products" element={<Catalog key="products"/>}/><Route path="/DataDisplay" element={<Navigate to="/products" replace/>}/></Route><Route element={<PrivateRoute permission="Category.Get"/>}><Route path="/categories" element={<Catalog key="categories" categoriesOnly/>}/></Route><Route path="/forbidden" element={<section className="panel"><h1>Erişim izniniz yok</h1><p>Bu sayfa için gerekli yetkiye sahip değilsiniz. Menüden erişebildiğiniz bir sayfayı seçin.</p></section>}/><Route path="*" element={<section className="panel"><h1>Sayfa bulunamadı</h1><Link to="/products">Ürünlere dön</Link></section>}/></Route></Route><Route path="/" element={<Navigate to="/products" replace/>}/></Routes></BrowserRouter></AuthProvider>;}
