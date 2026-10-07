@@ -1,4 +1,4 @@
-﻿using Business.Abstract;
+using Business.Abstract;
 using Core.Utilities.Results;
 using Entities.Concrete;
 using Entities.Dtos;
@@ -7,29 +7,29 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-	[Route("api/[controller]")]
-	[ApiController]
-	public class CategoryController : ControllerBase
-	{
-		private ICategoryService _categoryService;
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CategoryController : ControllerBase
+    {
+        private ICategoryService _categoryService;
 
-		public CategoryController(ICategoryService categoryService)
-		{
-			_categoryService = categoryService;
-		}
+        public CategoryController(ICategoryService categoryService)
+        {
+            _categoryService = categoryService;
+        }
 
-		[HttpPost("addcategory")]
-		public IActionResult AddCategory(CategoryForCreateDto request)
-		{
-			var category = new Category { CategoryName = request.CategoryName };
-			var result = _categoryService.Add(category);
+        [HttpPost("addcategory")]
+        public IActionResult AddCategory(CategoryForCreateDto request)
+        {
+            var category = new Category { CategoryName = request.CategoryName };
+            var result = _categoryService.Add(category);
 
-			if (result.Success)
-			{
-				return Ok(result);
-			}
-			return BadRequest(result);
-		}
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
 
         [HttpPost("updatecategory")]
         public IActionResult UpdateCategory(CategoryForUpdateDto request)
@@ -55,21 +55,21 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-		[HttpPost("getallcategories")]
-		public IActionResult GetAllCategories()
-		{
-			var result = _categoryService.GetList();
+        [HttpPost("getallcategories")]
+        public IActionResult GetAllCategories()
+        {
+            var result = _categoryService.GetList();
 
-			if (result.Success)
-			{
-				var categories = result.Data.Select(category => new CategoryResponseDto
+            if (result.Success)
+            {
+                var categories = result.Data.Select(category => new CategoryResponseDto
                 {
                     Id = category.Id,
                     CategoryName = category.CategoryName
                 }).ToList();
                 return Ok(new SuccessDataResult<List<CategoryResponseDto>>(categories, result.Message));
-			}
-			return BadRequest(result);
-		}
-	}
+            }
+            return BadRequest(result);
+        }
+    }
 }

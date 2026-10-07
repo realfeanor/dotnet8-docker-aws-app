@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
@@ -25,14 +25,14 @@ namespace Core.Extensions
             }
             catch (Exception e)
             {
-                await HandleExceptionAsync(httpContext,e);
+                await HandleExceptionAsync(httpContext, e);
             }
         }
 
         private Task HandleExceptionAsync(HttpContext httpContext, Exception e)
         {
             httpContext.Response.ContentType = "application/json";
-            httpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
             string message = "Internal Server Error";
             if (e is UnauthorizedAccessException)
@@ -40,7 +40,7 @@ namespace Core.Extensions
                 httpContext.Response.StatusCode = httpContext.User.Identity?.IsAuthenticated == true ? 403 : 401;
                 message = "Access denied";
             }
-            if (e.GetType()==typeof(ValidationException))
+            if (e.GetType() == typeof(ValidationException))
             {
                 httpContext.Response.StatusCode = 400;
                 message = e.Message;

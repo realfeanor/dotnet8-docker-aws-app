@@ -1,4 +1,4 @@
-﻿using Business.Abstract;
+using Business.Abstract;
 using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
@@ -13,24 +13,24 @@ using System.Text;
 
 namespace Business.Concrete
 {
-	public class CategoryManager : ICategoryService
-	{
-		private readonly ICategoryDal _categoryDal;
+    public class CategoryManager : ICategoryService
+    {
+        private readonly ICategoryDal _categoryDal;
         private readonly IProductDal _productDal;
 
-		public CategoryManager(ICategoryDal categoryDal, IProductDal productDal)
-		{
-			_categoryDal = categoryDal;
+        public CategoryManager(ICategoryDal categoryDal, IProductDal productDal)
+        {
+            _categoryDal = categoryDal;
             _productDal = productDal;
-		}
+        }
 
-		[SecuredOperation("Admin,Category.Add", Priority = -100)]
-		[ValidationAspect(typeof(CategoryValidator), Priority = 1)]
-		public IResult Add(Category category)
-		{
-			_categoryDal.Add(category);
-			return new SuccessResult(Messages.CategoryAdded);
-		}
+        [SecuredOperation("Admin,Category.Add", Priority = -100)]
+        [ValidationAspect(typeof(CategoryValidator), Priority = 1)]
+        public IResult Add(Category category)
+        {
+            _categoryDal.Add(category);
+            return new SuccessResult(Messages.CategoryAdded);
+        }
 
         [SecuredOperation("Admin,Category.Update", Priority = -100)]
         [ValidationAspect(typeof(CategoryUpdateValidator), Priority = 1)]
@@ -67,10 +67,10 @@ namespace Business.Concrete
             existing.CategoryName = requested.CategoryName;
         }
 
-		[SecuredOperation("Admin,Category.Get", Priority = -100)]
-		public IDataResult<List<Category>> GetList()
-		{
-			return new SuccessDataResult<List<Category>>(_categoryDal.GetList().ToList());
-		}
-	}
+        [SecuredOperation("Admin,Category.Get", Priority = -100)]
+        public IDataResult<List<Category>> GetList()
+        {
+            return new SuccessDataResult<List<Category>>(_categoryDal.GetList().ToList());
+        }
+    }
 }

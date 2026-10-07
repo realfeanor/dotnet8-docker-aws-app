@@ -4,9 +4,11 @@ React frontend for the .NET product catalog API. The interface is in Turkish and
 
 ## Run
 
-Set `REACT_APP_API_URL` in `.env` to the backend origin (without `/api`), then run `npm install` and `npm start`.
+Use Node.js 24. Copy `.env.example` to `.env`, set `VITE_API_URL` to the backend origin (without `/api`), then run `npm ci` and `npm start`.
 
-Run `npm test -- --watchAll=false` for permission and route tests, and `npm run build` for a production build.
+Run `npm test` for permission and route tests, and `npm run build` for a production build. Vite writes the production application to `dist/`.
+
+The container serves that build through Nginx. Its `try_files` fallback returns `index.html` for routes such as `/products`, allowing React Router to handle direct navigation and browser refreshes.
 
 ## Permissions
 

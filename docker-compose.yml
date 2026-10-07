@@ -39,7 +39,7 @@ services:
     build:
       context: ./frontend
       args:
-        REACT_APP_API_URL: http://localhost:5000
+        VITE_API_URL: http://localhost:5000
     container_name: reactapp
     ports:
       - "3000:80"

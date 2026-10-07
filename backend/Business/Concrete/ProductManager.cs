@@ -18,89 +18,89 @@ using Business.BusinessAspects.Autofac;
 
 namespace Business.Concrete
 {
-	public class ProductManager : IProductService
-	{
-		private IProductDal _productDal;
-		private readonly ICategoryDal _categoryDal;
+    public class ProductManager : IProductService
+    {
+        private IProductDal _productDal;
+        private readonly ICategoryDal _categoryDal;
 
-		public ProductManager(IProductDal productDal, ICategoryDal categoryDal)
-		{
-			_productDal = productDal;
-			_categoryDal = categoryDal;
-		}
+        public ProductManager(IProductDal productDal, ICategoryDal categoryDal)
+        {
+            _productDal = productDal;
+            _categoryDal = categoryDal;
+        }
 
-		[SecuredOperation("Admin,Product.Get", Priority = -100)]
-		[LogAspect(typeof(FileLogger))]
-		public IDataResult<Product> GetById(int productId)
-		{
-			return new SuccessDataResult<Product>(_productDal.GetWithCategory(productId));
-		}
+        [SecuredOperation("Admin,Product.Get", Priority = -100)]
+        [LogAspect(typeof(FileLogger))]
+        public IDataResult<Product?> GetById(int productId)
+        {
+            return new SuccessDataResult<Product?>(_productDal.GetWithCategory(productId));
+        }
 
-		[SecuredOperation("Admin,Product.Get", Priority = -100)]
-		[LogAspect(typeof(DatabaseLogger))]
-		[PerformanceAspect(5)]
-		public IDataResult<List<Product>> GetList()
-		{
-			return new SuccessDataResult<List<Product>>(_productDal.GetListWithCategory());
-		}
+        [SecuredOperation("Admin,Product.Get", Priority = -100)]
+        [LogAspect(typeof(DatabaseLogger))]
+        [PerformanceAspect(5)]
+        public IDataResult<List<Product>> GetList()
+        {
+            return new SuccessDataResult<List<Product>>(_productDal.GetListWithCategory());
+        }
 
-		[SecuredOperation("Admin,Product.Get", Priority = -100)]
-		[LogAspect(typeof(DatabaseLogger))]
-		[CacheAspect(duration: 10)]
-		public IDataResult<List<Product>> GetListByCategory(int categoryId)
-		{
-			return new SuccessDataResult<List<Product>>(_productDal.GetListWithCategory(categoryId));
-		}
+        [SecuredOperation("Admin,Product.Get", Priority = -100)]
+        [LogAspect(typeof(DatabaseLogger))]
+        [CacheAspect(duration: 10)]
+        public IDataResult<List<Product>> GetListByCategory(int categoryId)
+        {
+            return new SuccessDataResult<List<Product>>(_productDal.GetListWithCategory(categoryId));
+        }
 
-		[SecuredOperation("Admin,Product.Add", Priority = -100)]
-		[ValidationAspect(typeof(ProductValidator), Priority = 1)]
-		[CacheRemoveAspect("IProductService.Get")]
-		public IResult Add(Product product)
-		{
-			IResult result = BusinessRules.Run(CheckIfProductNameExists(product.ProductName), CheckIfCategoryExists(product.CategoryId));
+        [SecuredOperation("Admin,Product.Add", Priority = -100)]
+        [ValidationAspect(typeof(ProductValidator), Priority = 1)]
+        [CacheRemoveAspect("IProductService.Get")]
+        public IResult Add(Product product)
+        {
+            IResult? result = BusinessRules.Run(CheckIfProductNameExists(product.ProductName), CheckIfCategoryExists(product.CategoryId));
 
-			if (result != null)
-			{
-				return result;
-			}
-			_productDal.Add(product);
-			return new SuccessResult(Messages.ProductAdded);
-		}
+            if (result != null)
+            {
+                return result;
+            }
+            _productDal.Add(product);
+            return new SuccessResult(Messages.ProductAdded);
+        }
 
-		private IResult CheckIfProductNameExists(string productName, int? excludedProductId = null)
-		{
+        private IResult CheckIfProductNameExists(string productName, int? excludedProductId = null)
+        {
 
-			var result = _productDal.ProductNameExists(productName, excludedProductId);
-			if (result)
-			{
-				return new ErrorResult(Messages.ProductNameAlreadyExists);
-			}
+            var result = _productDal.ProductNameExists(productName, excludedProductId);
+            if (result)
+            {
+                return new ErrorResult(Messages.ProductNameAlreadyExists);
+            }
 
-			return new SuccessResult();
-		}
+            return new SuccessResult();
+        }
 
-		private IResult CheckIfCategoryExists(int categoryId)
+        private IResult CheckIfCategoryExists(int categoryId)
         {
             return _categoryDal.Exists(categoryId)
                 ? new SuccessResult()
                 : new ErrorResult("Category does not exist.");
         }
 
-		[SecuredOperation("Admin,Product.Delete", Priority = -100)]
-		[CacheRemoveAspect("IProductService.Get")]
-		public IResult Delete(Product product)
-		{
-			var existing = _productDal.Get(p => p.Id == product.Id);
+        [SecuredOperation("Admin,Product.Delete", Priority = -100)]
+        [CacheRemoveAspect("IProductService.Get")]
+        public IResult Delete(Product product)
+        {
+            var existing = _productDal.Get(p => p.Id == product.Id);
             if (existing == null) return new ErrorResult("Product does not exist.");
             _productDal.Delete(existing);
-			return new SuccessResult(Messages.ProductDeleted);
-		}
+            return new SuccessResult(Messages.ProductDeleted);
+        }
 
-		[SecuredOperation("Admin,Product.Update", Priority = -100)]
-		[ValidationAspect(typeof(ProductValidator), Priority = 1)]
-		[CacheRemoveAspect("IProductService.Get")]
-		public IResult Update(Product product)
-		{
+        [SecuredOperation("Admin,Product.Update", Priority = -100)]
+        [ValidationAspect(typeof(ProductValidator), Priority = 1)]
+        [CacheRemoveAspect("IProductService.Get")]
+        public IResult Update(Product product)
+        {
 
             var existing = _productDal.Get(p => p.Id == product.Id);
             if (existing == null) return new ErrorResult("Product does not exist.");
@@ -112,7 +112,7 @@ namespace Business.Concrete
             ApplyProductChanges(existing, product);
             _productDal.Update(existing);
             return new SuccessResult(Messages.ProductUpdated);
-		}
+        }
 
         private static void ApplyProductChanges(Product existing, Product requested)
         {
@@ -123,13 +123,13 @@ namespace Business.Concrete
             existing.UnitsInStock = requested.UnitsInStock;
         }
 
-		[SecuredOperation("Admin", Priority = -100)]
-		[ValidationAspect(typeof(ProductValidator), Priority = 1)]
-		[CacheRemoveAspect("IProductService.Get")]
-		public IResult TransactionalOperation(Product product)
-		{
+        [SecuredOperation("Admin", Priority = -100)]
+        [ValidationAspect(typeof(ProductValidator), Priority = 1)]
+        [CacheRemoveAspect("IProductService.Get")]
+        public IResult TransactionalOperation(Product product)
+        {
             // Update performs record and business-rule checks before persisting.
             return Update(product);
-		}
-	}
+        }
+    }
 }

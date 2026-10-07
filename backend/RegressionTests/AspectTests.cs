@@ -145,7 +145,10 @@ public class AspectTests
 
         Assert.Throws<ValidationException>(() => proxy.Register(new UserForRegisterDto
         {
-            Email = "new@example.com", Password = "", FirstName = "Example", LastName = "User"
+            Email = "new@example.com",
+            Password = "",
+            FirstName = "Example",
+            LastName = "User"
         }, ""));
     }
 

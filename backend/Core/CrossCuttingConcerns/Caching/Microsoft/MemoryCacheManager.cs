@@ -10,8 +10,8 @@ namespace Core.CrossCuttingConcerns.Caching.Microsoft
         private readonly IMemoryCache _cache;
         private readonly ConcurrentDictionary<string, byte> _keys = new();
         public MemoryCacheManager(IMemoryCache cache) => _cache = cache;
-        public T Get<T>(string key) => _cache.Get<T>(key);
-        public object Get(string key) => _cache.Get(key);
+        public T? Get<T>(string key) => _cache.Get<T>(key);
+        public object? Get(string key) => _cache.Get(key);
         public bool IsAdd(string key) => _cache.TryGetValue(key, out _);
         public void Add(string key, object data, int duration)
         {

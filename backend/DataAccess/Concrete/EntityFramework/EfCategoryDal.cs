@@ -12,8 +12,8 @@ namespace DataAccess.Concrete.EntityFramework
     {
         public bool Exists(int categoryId) => _context.Categories.Any(c => c.Id == categoryId);
 
-		public EfCategoryDal(NorthwindContext context) : base(context)
-		{
-		}
-	}
+        public EfCategoryDal(NorthwindContext context) : base(context)
+        {
+        }
+    }
 }

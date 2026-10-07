@@ -143,7 +143,11 @@ public class ProductManagerTests
 
     internal static Product CreateProduct(int id = 0) => new()
     {
-        Id = id, ProductName = "Apple Juice", CategoryId = 2,
-        QuantityPerUnit = "1 bottle", UnitPrice = 15, UnitsInStock = 20
+        Id = id,
+        ProductName = "Apple Juice",
+        CategoryId = 2,
+        QuantityPerUnit = "1 bottle",
+        UnitPrice = 15,
+        UnitsInStock = 20
     };
 }

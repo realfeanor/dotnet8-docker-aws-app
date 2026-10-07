@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Castle.DynamicProxy;
@@ -17,7 +17,7 @@ namespace Core.Aspects.Autofac.Caching
         public CacheRemoveAspect(string pattern)
         {
             _pattern = pattern;
-            _cacheManager = ServiceTool.ServiceProvider.GetService<ICacheManager>();
+            _cacheManager = ServiceTool.ServiceProvider.GetRequiredService<ICacheManager>();
         }
 
         protected override void OnSuccess(IInvocation invocation)

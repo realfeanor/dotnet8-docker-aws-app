@@ -1,17 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Core.Entities.Concrete;
 using Entities.Concrete;
 
 namespace DataAccess.Concrete.EntityFramework.Contexts
 {
-	public class NorthwindContext : DbContext
-	{
-		public NorthwindContext(DbContextOptions<NorthwindContext> options)
-			: base(options)
-		{
-		}
+    public class NorthwindContext : DbContext
+    {
+        public NorthwindContext(DbContextOptions<NorthwindContext> options)
+            : base(options)
+        {
+        }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Product>().Property(p => p.UnitPrice).HasPrecision(18, 2);
@@ -27,10 +27,10 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
         }
 
         public DbSet<Product> Products { get; set; }
-		public DbSet<Category> Categories { get; set; }
-		public DbSet<OperationClaim> OperationClaims { get; set; }
-		public DbSet<User> Users { get; set; }
-		public DbSet<UserOperationClaim> UserOperationClaims { get; set; }
-		public DbSet<Log> Logs { get; set; }
-	}
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<OperationClaim> OperationClaims { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserOperationClaim> UserOperationClaims { get; set; }
+        public DbSet<Log> Logs { get; set; }
+    }
 }

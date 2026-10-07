@@ -12,7 +12,7 @@ namespace DataAccess.Concrete.EntityFramework
     {
         public EfProductDal(NorthwindContext context) : base(context) { }
 
-        public Product GetWithCategory(int productId) =>
+        public Product? GetWithCategory(int productId) =>
             _context.Products.AsNoTracking().Include(p => p.Category).SingleOrDefault(p => p.Id == productId);
 
         public List<Product> GetListWithCategory(int? categoryId = null)

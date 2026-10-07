@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -8,60 +8,60 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Core.DataAccess.EntityFramework
 {
-	public class EfEntityRepositoryBase<TEntity, TContext> : IEntityRepository<TEntity>
-	where TEntity : class, IEntity, new()
-	where TContext : DbContext
-	{
+    public class EfEntityRepositoryBase<TEntity, TContext> : IEntityRepository<TEntity>
+    where TEntity : class, IEntity, new()
+    where TContext : DbContext
+    {
 
-		protected readonly TContext _context;
+        protected readonly TContext _context;
 
-		public EfEntityRepositoryBase(TContext context)
-		{
-			_context = context;
-		}
+        public EfEntityRepositoryBase(TContext context)
+        {
+            _context = context;
+        }
 
 
-		public void Add(TEntity entity)
-		{
+        public void Add(TEntity entity)
+        {
 
-			var addedEntity = _context.Entry(entity);
-			addedEntity.State = EntityState.Added;
-			_context.SaveChanges();
+            var addedEntity = _context.Entry(entity);
+            addedEntity.State = EntityState.Added;
+            _context.SaveChanges();
 
-		}
+        }
 
-		public void Delete(TEntity entity)
-		{
+        public void Delete(TEntity entity)
+        {
 
-			var deletedEntity = _context.Entry(entity);
-			deletedEntity.State = EntityState.Deleted;
-			_context.SaveChanges();
+            var deletedEntity = _context.Entry(entity);
+            deletedEntity.State = EntityState.Deleted;
+            _context.SaveChanges();
 
-		}
+        }
 
-		public TEntity Get(Expression<Func<TEntity, bool>> filter)
-		{
+        public TEntity? Get(Expression<Func<TEntity, bool>> filter)
+        {
 
-			return _context.Set<TEntity>().SingleOrDefault(filter);
+            return _context.Set<TEntity>().SingleOrDefault(filter);
 
-		}
+        }
 
-		public IList<TEntity> GetList(Expression<Func<TEntity, bool>> filter = null)
-		{
+        public IList<TEntity> GetList(Expression<Func<TEntity, bool>>? filter = null)
+        {
 
-			return filter == null
-				? _context.Set<TEntity>().ToList()
-				: _context.Set<TEntity>().Where(filter).ToList();
+            return filter == null
+                ? _context.Set<TEntity>().ToList()
+                : _context.Set<TEntity>().Where(filter).ToList();
 
-		}
+        }
 
-		public void Update(TEntity entity)
-		{
+        public void Update(TEntity entity)
+        {
 
-			var updatedEntity = _context.Entry(entity);
-			updatedEntity.State = EntityState.Modified;
-			_context.SaveChanges();
+            var updatedEntity = _context.Entry(entity);
+            updatedEntity.State = EntityState.Modified;
+            _context.SaveChanges();
 
-		}
-	}
+        }
+    }
 }

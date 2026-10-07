@@ -1,4 +1,4 @@
-﻿using Entities.Concrete;
+using Entities.Concrete;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace Business.ValidationRules.FluentValidation
 {
-	public class CategoryValidator : AbstractValidator<Category>
-	{
-		public CategoryValidator()
-		{
-			RuleFor(c => c.CategoryName).NotEmpty();
-			RuleFor(c => c.CategoryName).Length(2, 30);
-		}
-	}
+    public class CategoryValidator : AbstractValidator<Category>
+    {
+        public CategoryValidator()
+        {
+            RuleFor(c => c.CategoryName).NotEmpty();
+            RuleFor(c => c.CategoryName).Length(2, 30);
+        }
+    }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ using FluentValidation;
 
 namespace Core.Aspects.Autofac.Validation
 {
-    public class ValidationAspect:MethodInterception
+    public class ValidationAspect : MethodInterception
     {
         private Type _validatorType;
         public ValidationAspect(Type validatorType)
@@ -24,15 +24,18 @@ namespace Core.Aspects.Autofac.Validation
         }
         protected override void OnBefore(IInvocation invocation)
         {
-            var validator = (IValidator)Activator.CreateInstance(_validatorType);
-            var entityType = _validatorType.BaseType.GetGenericArguments()[0];
+            var validator = Activator.CreateInstance(_validatorType) as IValidator
+                ?? throw new InvalidOperationException("The validator could not be created.");
+            var validatorBaseType = _validatorType.BaseType
+                ?? throw new InvalidOperationException("The validator has no base type.");
+            var entityType = validatorBaseType.GetGenericArguments()[0];
             if (invocation.Arguments.Select((argument, index) => new { argument, index })
                 .Any(item => item.argument == null && entityType.IsAssignableFrom(invocation.Method.GetParameters()[item.index].ParameterType)))
                 throw new ValidationException("Request cannot be null.");
             var entities = invocation.Arguments.Where(t => t != null && entityType.IsInstanceOfType(t));
             foreach (var entity in entities)
             {
-                ValidationTool.Validate(validator,entity);
+                ValidationTool.Validate(validator, entity);
             }
         }
     }

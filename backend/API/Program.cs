@@ -1,5 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using API.Infrastructure;
 using Business.DependencyResolvers.Autofac;
 using Core.DependencyResolvers;
 using Core.Extensions;
@@ -34,7 +35,8 @@ builder.Services.AddCors();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 var configuration = (IConfiguration)builder.Configuration;
-var tokenOptions = configuration.GetSection("TokenOptions").Get<TokenOptions>();
+var tokenOptions = configuration.GetSection("TokenOptions").Get<TokenOptions>()
+    ?? throw new InvalidOperationException("TokenOptions configuration is missing.");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -64,15 +66,15 @@ if (string.IsNullOrWhiteSpace(connectionString))
 }
 
 builder.Services.AddDbContext<NorthwindContext>(options =>
-	options.UseSqlServer(
-		connectionString,
-		sqlOptions =>
-		{
-			sqlOptions.EnableRetryOnFailure(
-				maxRetryCount: 5,
-				maxRetryDelay: TimeSpan.FromSeconds(10),
-				errorNumbersToAdd: null);
-		}));
+    options.UseSqlServer(
+        connectionString,
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+        }));
 
 builder.Services.AddDependencyResolvers(new ICoreModule[]
             {
@@ -120,21 +122,35 @@ builder.Services.AddSwaggerGen(swagger =>
 var app = builder.Build();
 ServiceTool.Initialize(app.Services);
 
-// 🔹 APPLY MIGRATIONS ONLY IN NON-PRODUCTION
+// Apply migrations and optional demo data only outside Production.
 if (!app.Environment.IsProduction())
 {
-	using var scope = app.Services.CreateScope();
-	try
-	{
-		var db = scope.ServiceProvider.GetRequiredService<NorthwindContext>();
-		db.Database.Migrate();
-	}
-	catch (Exception ex)
-	{
-		var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-		logger.LogError(ex, "An error occurred while applying migrations.");
-		throw;
-	}
+    using var scope = app.Services.CreateScope();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<NorthwindContext>();
+        db.Database.Migrate();
+
+        var demoUserOptions = builder.Configuration
+            .GetSection(DemoUserOptions.SectionName)
+            .Get<DemoUserOptions>() ?? new DemoUserOptions();
+        DemoUserSeeder.Seed(db, demoUserOptions);
+
+        if (demoUserOptions.Enabled)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation(
+                "Demo users are ready: {AdminEmail} and {UserEmail}",
+                demoUserOptions.Admin.Email,
+                demoUserOptions.User.Email);
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while applying migrations or seeding demo users.");
+        throw;
+    }
 }
 
 
@@ -159,7 +175,7 @@ app.UseCors(x => x.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
 
 if (app.Environment.IsDevelopment())
 {
-	app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 }
 
 

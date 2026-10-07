@@ -69,14 +69,18 @@ public class RegistrationTests
 
     private static UserForRegisterDto Request(string email) => new()
     {
-        Email = email, Password = "password", FirstName = "Demo", LastName = "User"
+        Email = email,
+        Password = "password",
+        FirstName = "Demo",
+        LastName = "User"
     };
 
     private static AuthManager CreateManager(NorthwindContext context)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
         {
-            ["TokenOptions:Issuer"] = "tests", ["TokenOptions:Audience"] = "tests",
+            ["TokenOptions:Issuer"] = "tests",
+            ["TokenOptions:Audience"] = "tests",
             ["TokenOptions:AccessTokenExpiration"] = "5",
             ["TokenOptions:SecurityKey"] = new string('x', 64)
         }).Build();

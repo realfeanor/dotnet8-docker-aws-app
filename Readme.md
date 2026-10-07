@@ -1,6 +1,6 @@
 # Full Stack Dockerized Application (.NET 8 + React + AWS)
 
-A containerized full-stack web application built with **.NET 8 Web API** and **React (Create React App)**.  
+A containerized full-stack web application built with **.NET 8 Web API** and **React with Vite**.
 This portfolio sample demonstrates layered backend architecture, aspect-oriented programming (AOP), authentication, containerization, and deployment using AWS. Its goal is to make the architecture and structure easy to explore; it is not a finished product.
 
 ---
@@ -16,7 +16,7 @@ This portfolio sample demonstrates layered backend architecture, aspect-oriented
 - Aspect-Oriented Programming (AOP)
 
 ### Frontend
-- React (Create React App)
+- React with Vite
 - Axios for API communication
 - Basic authentication UI (Login / Register)
 
@@ -131,15 +131,28 @@ Then access:
 
 ## Explore the Backend
 
-Register a user through `POST /api/Auth/register`. Registration automatically grants `Product.Get` and `Category.Get`, so new users can read products and categories immediately using the returned token. It does not grant write or administrative permissions. Existing users are unchanged. To explore protected product and category endpoints locally, connect to the Docker SQL Server at `localhost,1433`, open the `Dotnet8DB` database, and run [grant-demo-admin.sql](backend/scripts/grant-demo-admin.sql) after replacing the sample email with your registered email.
+Docker startup automatically creates and refreshes two local demo accounts:
 
-Log in again through `POST /api/Auth/login` after assigning the claim. In Swagger, select **Authorize** and enter `Bearer <accessToken>`. The `Admin` claim allows the product and category demo operations; individual claims such as `Product.Add` and `Category.Get` allow only their corresponding operations. Demo administrator assignment is a manual, local setup step.
+| Access | Email | Password | Claims |
+| --- | --- | --- | --- |
+| Administrator | `admin@stockroom.local` | `AdminDemo!2026` | `Admin` |
+| Read-only user | `user@stockroom.local` | `UserDemo!2026` | `Product.Get`, `Category.Get` |
+
+These public credentials are intentionally stored in `appsettings.Docker.json` for portfolio demonstration only. Seeding is explicitly enabled for the Docker environment and the API never runs migration or demo-user seeding in Production. The seed is repeatable: restarting the stack updates these two accounts and their claims instead of creating duplicates.
+
+You can also register a user through `POST /api/Auth/register`. Registration grants `Product.Get` and `Category.Get`, so new users can read products and categories using the returned token; it does not grant write or administrative permissions. For a custom local administrator, use [grant-demo-admin.sql](backend/scripts/grant-demo-admin.sql) after replacing the sample email.
+
+Log in through `POST /api/Auth/login`. In Swagger, select **Authorize** and enter `Bearer <accessToken>`. The `Admin` claim allows the product and category demo operations; individual claims such as `Product.Add` and `Category.Get` allow only their corresponding operations.
 
 Run the backend checks from the repository root with the .NET 8 SDK:
 
 ```bash
 dotnet build backend/Dotnet8-Backend.sln
 dotnet test backend/Dotnet8-Backend.sln
+cd frontend
+npm ci
+npm test
+npm run build
 ```
 
 The xUnit test project checks business rules with fake repositories, controller DTO mapping, authorization and validation through Castle proxies, cache invalidation, and EF model/migration SQL. Every test runs independently and requires no external database or Docker. Registration persistence tests use isolated in-memory SQLite databases. These checks do not replace a live SQL Server or HTTP integration test.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -12,7 +12,7 @@ namespace Core.CrossCuttingConcerns.Logging.Log4Net
     public class LoggerServiceBase
     {
         private static readonly object ConfigurationLock = new object();
-        private static ILoggerRepository _repository;
+        private static ILoggerRepository? _repository;
         private readonly ILog _log;
 
         public static void Configure(string connectionString, string configurationPath)
@@ -29,11 +29,20 @@ namespace Core.CrossCuttingConcerns.Logging.Log4Net
                     document.Load(config);
 
                 // Set the connection before log4net activates its database appenders.
-                foreach (XmlElement connection in document.SelectNodes("/log4net/appender[@type='log4net.Appender.AdoNetAppender']/connectionString"))
+                var connectionNodes = document.SelectNodes(
+                    "/log4net/appender[@type='log4net.Appender.AdoNetAppender']/connectionString");
+                if (connectionNodes is null)
+                    throw new InvalidOperationException("The log4net database appender configuration is missing.");
+
+                foreach (XmlElement connection in connectionNodes)
                     connection.SetAttribute("value", connectionString);
 
-                var repository = LogManager.GetRepository(Assembly.GetEntryAssembly());
-                log4net.Config.XmlConfigurator.Configure(repository, document["log4net"]);
+                var entryAssembly = Assembly.GetEntryAssembly()
+                    ?? throw new InvalidOperationException("The entry assembly is unavailable.");
+                var log4NetElement = document["log4net"]
+                    ?? throw new InvalidOperationException("The log4net root element is missing.");
+                var repository = LogManager.GetRepository(entryAssembly);
+                log4net.Config.XmlConfigurator.Configure(repository, log4NetElement);
                 _repository = repository;
             }
         }
@@ -53,8 +62,8 @@ namespace Core.CrossCuttingConcerns.Logging.Log4Net
 
         public void Info(object logMessage)
         {
-            if(IsInfoEnabled)
-            _log.Info(logMessage);
+            if (IsInfoEnabled)
+                _log.Info(logMessage);
         }
 
         public void Debug(object logMessage)

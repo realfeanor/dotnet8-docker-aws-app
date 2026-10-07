@@ -10,8 +10,8 @@ export default function PasswordInput({ label, name, autoComplete }) {
       <div className="password-field">
         <input id={id} name={name} type={visible ? 'text' : 'password'} required autoComplete={autoComplete} />
         <button type="button" className="secondary" aria-controls={id} aria-pressed={visible}
-          aria-label={`${label}: ${visible ? 'gizle' : 'göster'}`} onClick={() => setVisible(value => !value)}>
-          {visible ? 'Gizle' : 'Göster'}
+          aria-label={`${visible ? 'Hide' : 'Show'} ${label.toLowerCase()}`} onClick={() => setVisible(value => !value)}>
+          {visible ? 'Hide' : 'Show'}
         </button>
       </div>
     </div>

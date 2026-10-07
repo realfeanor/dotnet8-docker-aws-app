@@ -8,7 +8,7 @@ using Entities.Concrete;
 
 namespace Business.Concrete
 {
-    public class UserManager:IUserService
+    public class UserManager : IUserService
     {
         IUserDal _userDal;
 
@@ -32,14 +32,14 @@ namespace Business.Concrete
             _userDal.Add(user);
         }
 
-        public User GetByMail(string email)
+        public User? GetByMail(string email)
         {
             return _userDal.Get(u => u.Email == email);
         }
 
-		public void Update(User user)
-		{
-			_userDal.Update(user);
-		}
-	}
+        public void Update(User user)
+        {
+            _userDal.Update(user);
+        }
+    }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Castle.DynamicProxy;
@@ -9,20 +9,21 @@ using Core.Utilities.Messages;
 
 namespace Core.Aspects.Autofac.Exception
 {
-    public class ExceptionLogAspect:MethodInterception
+    public class ExceptionLogAspect : MethodInterception
     {
         private LoggerServiceBase _loggerServiceBase;
 
         public ExceptionLogAspect(Type loggerService)
         {
-            if (loggerService.BaseType!=typeof(LoggerServiceBase))
+            if (loggerService.BaseType != typeof(LoggerServiceBase))
             {
                 throw new System.Exception(AspectMessages.WrongLoggerType);
             }
 
-            _loggerServiceBase = (LoggerServiceBase) Activator.CreateInstance(loggerService);
+            _loggerServiceBase = Activator.CreateInstance(loggerService) as LoggerServiceBase
+                ?? throw new InvalidOperationException(AspectMessages.WrongLoggerType);
         }
-        protected override void OnException(IInvocation invocation,System.Exception e)
+        protected override void OnException(IInvocation invocation, System.Exception e)
         {
             LogDetailWithException logDetailWithException = GetLogDetail(invocation);
             logDetailWithException.ExceptionMessage = e.Message;
@@ -37,7 +38,7 @@ namespace Core.Aspects.Autofac.Exception
             {
                 logParameters.Add(new LogParameter
                 {
-                    Name= invocation.GetConcreteMethod().GetParameters()[i].Name,
+                    Name = invocation.GetConcreteMethod().GetParameters()[i].Name ?? $"argument{i}",
                     Value = "[redacted]",
                     Type = invocation.Arguments[i]?.GetType().Name ?? "null"
                 });
